@@ -1087,10 +1087,19 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <Comment>删除标识 0：未删除 1：已删除</Comment>
       <DataType>tinyint(1)|0s</DataType>
     </column>
-    <key id="311" parent="300" name="PRIMARY">
+    <index id="311" parent="300" name="idx_unique_username">
+      <ColNames>username</ColNames>
+      <Unique>1</Unique>
+      <Type>btree</Type>
+    </index>
+    <key id="312" parent="300" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+    </key>
+    <key id="313" parent="300" name="idx_unique_username">
+      <ColNames>username</ColNames>
+      <UnderlyingIndexName>idx_unique_username</UnderlyingIndexName>
     </key>
   </database-model>
 </dataSource>
