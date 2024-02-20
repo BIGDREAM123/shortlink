@@ -12,11 +12,6 @@
         <module name="shortlink-project" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="17">
-      <module name="shortlink-admin" target="17" />
-      <module name="shortlink-all" target="17" />
-      <module name="shortlink-gateway" target="17" />
-      <module name="shortlink-project" target="17" />
-    </bytecodeTargetLevel>
+    <bytecodeTargetLevel target="17" />
   </component>
 </project>

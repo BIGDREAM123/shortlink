@@ -18,17 +18,19 @@ import org.lxq.shortlink.admin.dto.req.UserRegisterReqDTO;
 import org.lxq.shortlink.admin.dto.resp.UserLoginRespDTO;
 import org.lxq.shortlink.admin.dto.resp.UserRespDTO;
 import org.lxq.shortlink.admin.dto.resp.UserUpdateReqDTO;
+import org.lxq.shortlink.admin.service.GroupService;
 import org.lxq.shortlink.admin.service.UserService;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.lxq.shortlink.admin.common.enums.UserErrorCodeEnum.USER_NAME_NULL;
+import static org.lxq.shortlink.admin.common.enums.UserErrorCodeEnum.*;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +38,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDo> implements 
     private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
+    private final GroupService groupService;
 
     @Override
     public UserRespDTO getUserByUsername(String username) {
@@ -63,11 +66,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDo> implements 
         RLock lock = redissonClient.getLock(RedisCacheConstant.LOCK_USER_REGISTER_KEY + userRegisterReqDTO.getUsername());
         try {
             if(lock.tryLock()){
-                int insert = baseMapper.insert(BeanUtil.toBean(userRegisterReqDTO, UserDo.class));
-                if(insert <1){
-                    throw new ClientException(UserErrorCodeEnum.USER_SAVE_ERROR);
+                try {
+                    int insert = baseMapper.insert(BeanUtil.toBean(userRegisterReqDTO, UserDo.class));
+                    if(insert <1){
+                        throw new ClientException(UserErrorCodeEnum.USER_SAVE_ERROR);
+                    }
+                }catch (DuplicateKeyException ex){
+                    throw  new ClientException(USER_EXIST);
                 }
+
                 userRegisterCachePenetrationBloomFilter.add(userRegisterReqDTO.getUsername());
+                groupService.save(userRegisterReqDTO.getUsername(),"默认分组");
                 return;
             }else{
                 throw new ClientException(USER_NAME_NULL);
@@ -75,7 +84,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDo> implements 
 
         }finally {
             lock.unlock();
-
         }
 
 
@@ -108,7 +116,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDo> implements 
         String uuid = UUID.randomUUID().toString();
         stringRedisTemplate.opsForHash().put("login_"+userLoginReqDTO.getUsername(),
                 uuid, JSON.toJSONString(userDo));
-        stringRedisTemplate.expire("login_"+userLoginReqDTO.getUsername(),30L, TimeUnit.MINUTES);
+        stringRedisTemplate.expire("login_"+userLoginReqDTO.getUsername(),30L, TimeUnit.DAYS);
         return new UserLoginRespDTO(uuid);
     }
 

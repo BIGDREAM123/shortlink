@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="dataSourceStorageLocal" created-in="IU-211.7142.45">
+  <component name="dataSourceStorageLocal" created-in="IU-233.14015.106">
     <data-source name="link@localhost" uuid="a22acdf3-1b68-4415-bbf9-09f0f0b58a00">
       <database-info product="MySQL" version="8.0.35" jdbc-version="4.2" driver-name="MySQL Connector/J" driver-version="mysql-connector-java-8.0.25 (Revision: 08be9e9b4cba6aa115f9b27b215887af40b159e0)" dbms="MYSQL" exact-version="8.0.35" exact-driver-version="8.0">
         <extra-name-characters>#@</extra-name-characters>
@@ -14,6 +14,29 @@
           <node kind="schema" qname="@" />
         </introspection-scope>
       </schema-mapping>
+    </data-source>
+    <data-source name="@localhost" uuid="e80017fc-951d-4f1b-aa29-5e12870d8960">
+      <database-info product="MySQL" version="8.0.17" jdbc-version="4.2" driver-name="MySQL Connector/J" driver-version="mysql-connector-java-8.0.25 (Revision: 08be9e9b4cba6aa115f9b27b215887af40b159e0)" dbms="MYSQL" exact-version="8.0.17" exact-driver-version="8.0">
+        <extra-name-characters>#@</extra-name-characters>
+        <identifier-quote-string>`</identifier-quote-string>
+        <jdbc-catalog-is-schema>true</jdbc-catalog-is-schema>
+      </database-info>
+      <case-sensitivity plain-identifiers="lower" quoted-identifiers="lower" />
+      <secret-storage>master_key</secret-storage>
+      <user-name>root</user-name>
+      <schema-mapping>
+        <introspection-scope>
+          <node kind="schema" qname="link" />
+        </introspection-scope>
+      </schema-mapping>
+    </data-source>
+    <data-source name="unknown" uuid="0110dec2-03ea-4e19-ab06-e84b7487f7b5">
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="UNKNOWN" />
+      <schema-mapping />
+    </data-source>
+    <data-source name="0@127.0.0.1" uuid="ce9bbb7a-96e6-4734-8146-258063ecef92">
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="REDIS" />
+      <schema-mapping />
     </data-source>
   </component>
 </project>
