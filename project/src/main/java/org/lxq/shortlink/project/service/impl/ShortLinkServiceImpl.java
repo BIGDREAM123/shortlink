@@ -14,6 +14,9 @@ import jodd.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.lxq.shortlink.project.common.constant.RedisKeyConstant;
 import org.lxq.shortlink.project.common.convention.exception.ClientException;
 import org.lxq.shortlink.project.common.convention.exception.ServiceException;
@@ -39,6 +42,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -77,6 +83,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .validDate(requestParam.getValidDate())
                 .describe(requestParam.getDescribe())
                 .originUrl(requestParam.getOriginUrl())
+                .favicon(getFavicon(requestParam.getOriginUrl()))
                 .build();
         ShortLinkGotoDO linkGotoDO = ShortLinkGotoDO.builder().gid(requestParam.getGid()).fullShortUrl(fullShortUrl).build();
         try {
@@ -91,11 +98,10 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 throw new ServiceException("短链接生成重复");
             }
         }
-        long linkCacheValidDateTime = LinkUtil.getLinkCacheValidDateTime(requestParam.getValidDate());
         stringRedisTemplate.opsForValue().set(
                 String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY,fullShortUrl)
         ,requestParam.getOriginUrl(),
-                linkCacheValidDateTime
+                LinkUtil.getLinkCacheValidDateTime(requestParam.getValidDate())
                 ,TimeUnit.MILLISECONDS);
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
 
@@ -134,7 +140,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     /**
      * 查询短链接数量
-     * @param requestParam
+     * @param requestParam gid的列表
      * @return
      */
     @Override
@@ -218,11 +224,13 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
         boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
         if(!contains){
+            ((HttpServletResponse) response).sendRedirect("/page/notfound");
             return;
         }
         String gotoIsNullShortLink = stringRedisTemplate.opsForValue().get(String.format(
                 RedisKeyConstant.GOTO_IS_NULL_SHORT_LINK_KEY,fullShortUrl));
         if(StringUtil.isNotBlank(gotoIsNullShortLink)){
+            ((HttpServletResponse) response).sendRedirect("/page/notfound");
             return;
         }
 
@@ -241,6 +249,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 // 需要封控
                 stringRedisTemplate.opsForValue().set(String.format(
                         RedisKeyConstant.GOTO_IS_NULL_SHORT_LINK_KEY,fullShortUrl),"-",30, TimeUnit.MINUTES);
+                ((HttpServletResponse) response).sendRedirect("/page/notfound");
                 return;
             }
             LambdaQueryWrapper<ShortLinkDO> eq = Wrappers.lambdaQuery(ShortLinkDO.class)
@@ -249,11 +258,20 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkDO::getDelFlag, 0)
                     .eq(ShortLinkDO::getEnableStatus, 0);
             ShortLinkDO shortLinkDO = baseMapper.selectOne(eq);
-            if(shortLinkDO!=null){
-                stringRedisTemplate.opsForValue().set(String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY,fullShortUrl),
-                        shortLinkDO.getOriginUrl());
+            if(shortLinkDO == null || (shortLinkDO.getValidDate() != null && shortLinkDO.getValidDate().before(new Date()))){
+                    stringRedisTemplate.opsForValue().set(
+                            String.format(RedisKeyConstant.GOTO_IS_NULL_SHORT_LINK_KEY,fullShortUrl),
+                            "-",30, TimeUnit.MINUTES);
+                    ((HttpServletResponse) response).sendRedirect("/page/notfound");
+                    return;
+                }
+                stringRedisTemplate.opsForValue().set(
+                        String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY,fullShortUrl),
+                        shortLinkDO.getOriginUrl(),
+                        LinkUtil.getLinkCacheValidDateTime(shortLinkDO.getValidDate()),
+                        TimeUnit.MILLISECONDS);
                 ((HttpServletResponse) response).sendRedirect(shortLinkDO.getOriginUrl());
-            }
+
         }finally {
             lock.unlock();
         }
@@ -282,5 +300,41 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
         }
         return shortUri;
+    }
+
+    /**
+     * 获取网站的favicon图标链接
+     * @param url 网站的url
+     * @return  favicon的图标链接 不存在返回null
+     */
+    @SneakyThrows
+    private String getFavicon(String url){
+        URL targetUrl = new URL(url);
+        HttpURLConnection connection = (HttpURLConnection)targetUrl.openConnection();
+        connection.setInstanceFollowRedirects(false);
+        connection.setRequestMethod("GET");
+        connection.connect();
+        int responseCode = connection.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP){
+            String redirectUrl = connection.getHeaderField("Location");
+            if (redirectUrl !=null){
+                URL newUrl = new URL(redirectUrl);
+                connection = (HttpURLConnection) newUrl.openConnection();
+                connection.setRequestMethod("GET");
+                connection.connect();
+                responseCode = connection.getResponseCode();
+            }
+        }
+        if (responseCode == HttpURLConnection.HTTP_OK){
+            Document document = Jsoup.connect(url).get();
+            Element faviconLink = document.select("link[rel~=(?i)^(shortcut )?icon]").first();
+            if (faviconLink !=null){
+                return faviconLink.attr("abs:href");
+            }
+        }
+        return null;
+
+
+
     }
 }

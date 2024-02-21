@@ -3,7 +3,7 @@ package org.lxq.shortlink.admin.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.lxq.shortlink.admin.common.convention.result.Result;
 import org.lxq.shortlink.admin.common.convention.result.Results;
-import org.lxq.shortlink.admin.remote.dto.ShortLinkRemoteService;
+import org.lxq.shortlink.admin.remote.ShortLinkRemoteService;
 import org.lxq.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import org.lxq.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import org.lxq.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;

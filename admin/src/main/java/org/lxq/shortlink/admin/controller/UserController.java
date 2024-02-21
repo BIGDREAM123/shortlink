@@ -9,7 +9,7 @@ import org.lxq.shortlink.admin.dto.req.UserRegisterReqDTO;
 import org.lxq.shortlink.admin.dto.resp.UserActualRespDTO;
 import org.lxq.shortlink.admin.dto.resp.UserLoginRespDTO;
 import org.lxq.shortlink.admin.dto.resp.UserRespDTO;
-import org.lxq.shortlink.admin.dto.resp.UserUpdateReqDTO;
+import org.lxq.shortlink.admin.dto.req.UserUpdateReqDTO;
 import org.lxq.shortlink.admin.service.UserService;
 import org.springframework.web.bind.annotation.*;
 

@@ -14,7 +14,7 @@ import org.lxq.shortlink.admin.dao.mapper.GroupMapper;
 import org.lxq.shortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import org.lxq.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import org.lxq.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
-import org.lxq.shortlink.admin.remote.dto.ShortLinkRemoteService;
+import org.lxq.shortlink.admin.remote.ShortLinkRemoteService;
 import org.lxq.shortlink.admin.remote.dto.resp.ShortLinkCountQueryRespDTO;
 import org.lxq.shortlink.admin.service.GroupService;
 import org.lxq.shortlink.admin.toolkit.RandomGenerator;

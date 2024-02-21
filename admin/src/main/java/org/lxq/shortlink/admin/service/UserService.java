@@ -6,7 +6,7 @@ import org.lxq.shortlink.admin.dto.req.UserLoginReqDTO;
 import org.lxq.shortlink.admin.dto.req.UserRegisterReqDTO;
 import org.lxq.shortlink.admin.dto.resp.UserLoginRespDTO;
 import org.lxq.shortlink.admin.dto.resp.UserRespDTO;
-import org.lxq.shortlink.admin.dto.resp.UserUpdateReqDTO;
+import org.lxq.shortlink.admin.dto.req.UserUpdateReqDTO;
 
 public interface UserService extends IService<UserDo> {
     /**

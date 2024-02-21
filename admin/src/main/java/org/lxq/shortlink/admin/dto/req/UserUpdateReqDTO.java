@@ -1,4 +1,4 @@
-package org.lxq.shortlink.admin.dto.resp;
+package org.lxq.shortlink.admin.dto.req;
 
 import lombok.Data;
 

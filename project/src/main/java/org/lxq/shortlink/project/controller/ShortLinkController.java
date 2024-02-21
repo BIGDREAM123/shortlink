@@ -45,7 +45,7 @@ public class ShortLinkController {
 
     /**
      * 分页查询
-     * @param requestParam
+     * @param requestParam gid
      * @return
      */
     @GetMapping ("/api/short-link/v1/group")
@@ -55,8 +55,8 @@ public class ShortLinkController {
     }
 
     /**
-     * 分页查询
-     * @param requestParam
+     * 统计短链接数量
+     * @param requestParam gid的列表
      * @return
      */
     @GetMapping ("/api/short-link/v1/count")
@@ -66,7 +66,7 @@ public class ShortLinkController {
 
     /**
      * 修改短链接
-     * @param requestParam
+     * @param requestParam 短链接修改请求参数
      * @return 空
      */
 
